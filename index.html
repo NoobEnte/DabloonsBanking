@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dabloons Bank</title>
+
+    <!-- Google Fonts für moderne Schriftarten -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome für Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: url('https://img.freepik.com/free-vector/gradient-black-background-with-wavy-lines_23-2149146010.jpg?t=st=1728328928~exp=1728332528~hmac=543297646f2e4301b6d83034b07729d0c9b877a1dca496bd3cde3d6b3bae4ffa&w=1800');
+            background-size: cover;
+            background-attachment: fixed;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            overflow: hidden;
+        }
+        h1 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            max-width: 600px;
+            margin: 50px auto;
+            position: relative;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        input[type="number"],
+        input[type="text"],
+        input[type="password"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button.remove {
+            background-color: #dc3545;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        button.remove:hover {
+            background-color: #c82333;
+        }
+        #dabloonTotal {
+            font-size: 2em;
+            margin-top: 20px;
+            color: #ffcc00;
+        }
+        .quick-buttons {
+            margin-top: 20px;
+        }
+        .quick-buttons button {
+            width: 100px;
+        }
+        .item-list-container {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #444;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .item {
+            background-color: #555;
+            color: #fff;
+            padding: 10px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 5px;
+        }
+        .item-name {
+            font-weight: bold;
+        }
+        .item-cost {
+            margin-right: 10px;
+        }
+        .remove-item {
+            cursor: pointer;
+            color: #ff0000;
+        }
+        .remove-item:hover {
+            color: #ff5555;
+        }
+        .error {
+            color: #ff0000;
+            margin-top: 10px;
+        }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background-color: #ffcc00;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-button:hover {
+            background-color: #e6b800;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="container">
+        <h1>Login</h1>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Benutzername" required>
+            <input type="password" id="loginPassword" placeholder="Passwort" required>
+            <button type="submit">Einloggen</button>
+        </form>
+        <p>Noch keinen Account? <a href="#" onclick="showRegister()">Hier registrieren</a></p>
+        <div class="error" id="loginError"></div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="registerScreen" class="container" style="display:none;">
+        <h1>Registrieren</h1>
+        <form id="registerForm">
+            <input type="text" id="registerUsername" placeholder="Benutzername" required>
+            <input type="password" id="registerPassword" placeholder="Passwort" required>
+            <button type="submit">Registrieren</button>
+        </form>
+        <p>Schon einen Account? <a href="#" onclick="showLogin()">Hier einloggen</a></p>
+        <div class="error" id="registerError"></div>
+    </div>
+
+    <!-- Hauptseite -->
+    <div id="mainScreen" class="container" style="display:none;">
+        <button class="logout-button" onclick="logout()">Logout</button>
+        <h1><i class="fas fa-coins"></i> Dabloons Bank</h1>
+        <p>Lagere deine Dabloons sicher und verwalte sie hier.</p>
+        
+        <!-- Dabloons hinzufügen oder entfernen -->
+        <form id="dabloonForm">
+            <label for="dabloons">Anzahl Dabloons hinzufügen oder entfernen:</label><br>
+            <input type="number" id="dabloons" name="dabloons" min="1" required><br>
+            <button type="submit"><i class="fas fa-plus-circle"></i> Dabloons hinzufügen</button>
+            <button type="button" id="removeButton" class="remove"><i class="fas fa-minus-circle"></i> Dabloons entfernen</button>
+        </form>
+
+        <div class="quick-buttons">
+            <h3>Schnell hinzufügen oder entfernen:</h3>
+            <button onclick="updateDabloonTotal(50)">+50</button>
+            <button onclick="updateDabloonTotal(100)">+100</button>
+            <button onclick="updateDabloonTotal(250)">+250</button>
+            <button onclick="updateDabloonTotal(1000)">+1000</button>
+            <br>
+            <button class="remove" onclick="updateDabloonTotal(-50)">-50</button>
+            <button class="remove" onclick="updateDabloonTotal(-100)">-100</button>
+            <button class="remove" onclick="updateDabloonTotal(-250)">-250</button>
+            <button class="remove" onclick="updateDabloonTotal(-1000)">-1000</button>
+        </div>
+
+        <div id="dabloonTotal">
+            Gelagerte Dabloons: <span id="total">0</span>
+        </div>
+
+        <!-- Items hinzufügen -->
+        <form id="itemForm">
+            <h3>Gekaufte Items</h3>
+            <input type="text" id="itemName" placeholder="Name des Items" required>
+            <input type="number" id="itemCost" placeholder="Kosten des Items" min="1" required>
+            <button type="submit">Item hinzufügen</button>
+            <div class="error" id="error-message"></div>
+        </form>
+
+        <!-- Liste der gekauften Items -->
+        <div class="item-list-container" id="itemListContainer">
+            <!-- Dynamisch gefüllte Liste von Items -->
+        </div>
+    </div>
+
+    <script>
+        // Benutzerinformationen in localStorage speichern
+        function saveUserToStorage(username, password) {
+            localStorage.setItem('user', JSON.stringify({ username: username, password: password }));
+        }
+
+        // Benutzerinformationen aus localStorage abrufen
+        function getUserFromStorage() {
+            const user = localStorage.getItem('user');
+            return user ? JSON.parse(user) : null;
+        }
+
+        // Überprüfen, ob der Benutzer eingeloggt ist
+        function isLoggedIn() {
+            return localStorage.getItem('loggedIn') === 'true';
+        }
+
+        // Benutzer einloggen
+        function login(username, password) {
+            const user = getUserFromStorage();
+            if (user && user.username === username && user.password === password) {
+                localStorage.setItem('loggedIn', 'true');
+                showMainScreen();
+            } else {
+                document.getElementById('loginError').innerText = 'Ungültiger Benutzername oder Passwort.';
+            }
+        }
+
+        // Benutzer registrieren
+        function register(username, password) {
+            saveUserToStorage(username, password);
+            localStorage.setItem('loggedIn', 'true');
+            showMainScreen();
+        }
+
+        // Logout Funktion
+        function logout() {
+            localStorage.setItem('loggedIn', 'false');
+            // Reset the dabloons and items in localStorage
+            localStorage.removeItem('dabloons');
+            localStorage.removeItem('items');
+            showLogin();
+        }
+
+        // EventListener für das Login-Formular
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            login(username, password);
+        });
+
+        // EventListener für das Registrierungsformular
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            register(username, password);
+        });
+
+        // Zeige das Registrierungsformular
+        function showRegister() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('registerScreen').style.display = 'block';
+        }
+
+        // Zeige das Login-Formular
+        function showLogin() {
+            document.getElementById('registerScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'block';
+            // Close the main screen
+            document.getElementById('mainScreen').style.display = 'none';
+        }
+
+        // Zeige die Hauptseite nach erfolgreichem Login/Registrierung
+        function showMainScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('registerScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+        }
+
+        // Initialisiere bei Seitenstart
+        window.onload = function () {
+            if (isLoggedIn()) {
+                showMainScreen();
+            } else {
+                showLogin();
+            }
+        };
+
+        // Dabloon-Management
+        const dabloonForm = document.getElementById('dabloonForm');
+        const totalDisplay = document.getElementById('total');
+        let totalDabloons = parseInt(localStorage.getItem('dabloons')) || 0;
+
+        function updateDabloonTotal(amount) {
+            totalDabloons += amount;
+            if (totalDabloons < 0) {
+                totalDabloons = 0;
+            }
+            localStorage.setItem('dabloons', totalDabloons);
+            totalDisplay.textContent = totalDabloons;
+        }
+
+        // Initialer Dabloon-Wert beim Laden der Seite
+        totalDisplay.textContent = totalDabloons;
+
+        dabloonForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = parseInt(document.getElementById('dabloons').value);
+            updateDabloonTotal(amount);
+            document.getElementById('dabloons').value = '';
+        });
+
+        document.getElementById('removeButton').addEventListener('click', function() {
+            const amount = parseInt(document.getElementById('dabloons').value);
+            updateDabloonTotal(-amount);
+            document.getElementById('dabloons').value = '';
+        });
+
+        // Item-Management
+        const itemForm = document.getElementById('itemForm');
+        const itemListContainer = document.getElementById('itemListContainer');
+        let itemList = JSON.parse(localStorage.getItem('items')) || [];
+
+        function renderItemList() {
+            itemListContainer.innerHTML = '';
+            itemList.forEach(function(item, index) {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('item');
+                itemDiv.innerHTML = `
+                    <span class="item-name">${item.name}</span>
+                    <span class="item-cost">${item.cost} Dabloons</span>
+                    <span class="remove-item" onclick="removeItem(${index})"><i class="fas fa-trash-alt"></i></span>
+                `;
+                itemListContainer.appendChild(itemDiv);
+            });
+        }
+
+        function addItem(name, cost) {
+            if (cost > totalDabloons) {
+                document.getElementById('error-message').innerText = 'Nicht genügend Dabloons vorhanden.';
+                return;
+            }
+            itemList.push({ name, cost });
+            updateDabloonTotal(-cost); // Dabloons abziehen
+            localStorage.setItem('items', JSON.stringify(itemList));
+            renderItemList();
+        }
+
+        function removeItem(index) {
+            const item = itemList[index];
+            updateDabloonTotal(parseInt(item.cost)); // Dabloons zurückerstatten
+            itemList.splice(index, 1);
+            localStorage.setItem('items', JSON.stringify(itemList));
+            renderItemList();
+        }
+
+        itemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const itemName = document.getElementById('itemName').value;
+            const itemCost = parseInt(document.getElementById('itemCost').value);
+            if (itemCost <= 0 || itemName.trim() === '') {
+                document.getElementById('error-message').innerText = 'Bitte einen gültigen Namen und Preis eingeben.';
+            } else {
+                document.getElementById('error-message').innerText = '';
+                addItem(itemName, itemCost);
+                document.getElementById('itemName').value = '';
+                document.getElementById('itemCost').value = '';
+            }
+        });
+
+        // Initiale Darstellung der gekauften Items
+        renderItemList();
+    </script>
+</body>
+</html>
